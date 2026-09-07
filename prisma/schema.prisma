@@ -1,0 +1,76 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String        @id @default(cuid())
+  email         String        @unique
+  name          String
+  passwordHash  String
+  role          String        @default("TEAM") // "ADMIN" | "TEAM"
+  createdAt     DateTime      @default(now())
+  events        EventMember[]
+  createdEvents Event[]
+  photos        Photo[]
+}
+
+model Event {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  createdById String
+  createdAt   DateTime      @default(now())
+  createdBy   User          @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  members     EventMember[]
+  photos      Photo[]
+  gallery     Gallery?
+}
+
+model EventMember {
+  eventId String
+  userId  String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, userId])
+}
+
+model Photo {
+  id                 String         @id @default(cuid())
+  eventId            String
+  uploadedById       String
+  filename           String
+  storageKey         String         @unique
+  mimeType           String
+  fileSize           Int
+  status             String         @default("PENDING") // "PENDING" | "UPLOADED"
+  createdAt          DateTime       @default(now())
+  event              Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  uploadedBy         User           @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+  galleryMemberships GalleryPhoto[]
+}
+
+model Gallery {
+  id          String         @id @default(cuid())
+  eventId     String         @unique
+  slug        String         @unique
+  pinHash     String
+  publishedAt DateTime       @default(now())
+  event       Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  photos      GalleryPhoto[]
+}
+
+model GalleryPhoto {
+  galleryId String
+  photoId   String
+  order     Int
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  photo     Photo   @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@id([galleryId, photoId])
+}
