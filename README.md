@@ -234,6 +234,7 @@ With `STORAGE_DRIVER="local"` (default in `.env.example`) photos are stored in `
 1. Create a private bucket (e.g., `trizen-photos`).
 2. Generate an API token / access key with Read & Write permissions.
 3. Set `STORAGE_DRIVER="s3"`, `S3_BUCKET="trizen-photos"`, `S3_ENDPOINT="https://s3.filebase.com"`, `AWS_REGION="us-east-1"`, and your key pair in the production environment.
+4. Apply the bucket CORS policy so the browser's direct presigned `PUT` is allowed: `npx tsx --env-file=.env scripts/set-bucket-cors.ts`. Without it, uploads fail the browser CORS preflight even though the credentials are valid.
 
 ### 3. Application Deployment (Vercel)
 1. Push your code to GitHub.

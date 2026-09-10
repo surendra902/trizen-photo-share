@@ -1,22 +1,32 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import sharp from 'sharp';
 import { putObject } from '../src/lib/storage';
 
 const prisma = new PrismaClient();
 
-// 1x1 valid sample JPEG buffer so images render cleanly
-const SAMPLE_JPEG = Buffer.from([
-  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x01, 0x00, 0x48,
-  0x00, 0x48, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43, 0x00, 0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08,
-  0x07, 0x07, 0x07, 0x09, 0x09, 0x08, 0x0a, 0x0c, 0x14, 0x0d, 0x0c, 0x0b, 0x0b, 0x0c, 0x19, 0x12,
-  0x13, 0x0f, 0x14, 0x1d, 0x1a, 0x1f, 0x1e, 0x1d, 0x1a, 0x1c, 0x1c, 0x20, 0x24, 0x2e, 0x27, 0x20,
-  0x22, 0x2c, 0x23, 0x1c, 0x1c, 0x28, 0x37, 0x29, 0x2c, 0x30, 0x31, 0x34, 0x34, 0x34, 0x1f, 0x27,
-  0x39, 0x3d, 0x38, 0x32, 0x3c, 0x2e, 0x33, 0x34, 0x32, 0xff, 0xc0, 0x00, 0x0b, 0x08, 0x00, 0x01,
-  0x00, 0x01, 0x01, 0x01, 0x11, 0x00, 0xff, 0xc4, 0x00, 0x1f, 0x00, 0x00, 0x01, 0x05, 0x01, 0x01,
-  0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04,
-  0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0xff, 0xda, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3f,
-  0x00, 0xbf, 0x80, 0xff, 0xd9,
-]);
+// Generate a real, visible 1200x800 JPEG per demo photo (distinct gradient + caption)
+// so the seeded gallery looks like an actual shoot instead of a blank grid.
+const PALETTE = [
+  { top: '#b03a5b', bottom: '#f4c6d3' }, // rose
+  { top: '#2f5d62', bottom: '#bfe3d0' }, // teal
+  { top: '#c9772f', bottom: '#ffe3b3' }, // sunset
+  { top: '#3d3b6e', bottom: '#d5d2f0' }, // indigo
+];
+
+async function makeSampleImage(filename: string, i: number): Promise<Buffer> {
+  const { top, bottom } = PALETTE[i % PALETTE.length];
+  const caption = filename.replace(/\.jpg$/i, '').replace(/_\d+$/, '').replace(/_/g, ' ');
+  const svg = `<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${top}"/><stop offset="100%" stop-color="${bottom}"/>
+    </linearGradient></defs>
+    <rect width="100%" height="100%" fill="url(#g)"/>
+    <text x="50%" y="46%" font-family="Georgia, serif" font-size="64" fill="#ffffff" text-anchor="middle" font-weight="bold">Arjun &amp; Priya</text>
+    <text x="50%" y="56%" font-family="Georgia, serif" font-size="40" fill="#ffffff" text-anchor="middle" opacity="0.9">${caption}</text>
+  </svg>`;
+  return sharp(Buffer.from(svg)).jpeg({ quality: 82 }).toBuffer();
+}
 
 async function main() {
   console.log('Seeding Trizen Photo Share database...');
@@ -78,9 +88,10 @@ async function main() {
   for (let i = 0; i < photoNames.length; i++) {
     const filename = photoNames[i];
     const storageKey = `events/${event.id}/${i + 1}_${filename}`;
+    const image = await makeSampleImage(filename, i);
 
-    // Goes to R2/S3 when STORAGE_DRIVER=s3, local uploads/ otherwise
-    await putObject(storageKey, SAMPLE_JPEG, 'image/jpeg');
+    // Goes to S3/Filebase when STORAGE_DRIVER=s3, local uploads/ otherwise
+    await putObject(storageKey, image, 'image/jpeg');
 
     const photo = await prisma.photo.create({
       data: {
@@ -89,7 +100,7 @@ async function main() {
         filename,
         storageKey,
         mimeType: 'image/jpeg',
-        fileSize: SAMPLE_JPEG.length,
+        fileSize: image.length,
         status: 'UPLOADED',
       },
     });

@@ -23,7 +23,7 @@ function jar() {
 }
 
 async function req(path: string, opts: RequestInit & { cookie?: string } = {}) {
-  const headers: Record<string, string> = { ...(opts.headers as any) };
+  const headers: Record<string, string> = { ...(opts.headers as Record<string, string>) };
   if (opts.cookie) headers['Cookie'] = opts.cookie;
   if (opts.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
   return fetch(`${BASE}${path}`, { ...opts, headers, redirect: 'manual' });
@@ -59,7 +59,7 @@ async function main() {
   const events = await evRes.json().catch(() => []);
   const eventList = Array.isArray(events) ? events : events.events ?? [];
   ok('Admin lists events 200', evRes.status === 200, `got ${evRes.status}`);
-  const event = eventList.find((e: any) => e.name?.includes('Arjun'));
+  const event = eventList.find((e: { id: string; name?: string }) => e.name?.includes('Arjun'));
   ok('Seeded event present', !!event, JSON.stringify(eventList).slice(0, 200));
   const eventId = event?.id;
 
@@ -96,7 +96,7 @@ async function main() {
   ok('Exactly 3 published photos', gallery?.photos?.length === 3, `got ${gallery?.photos?.length}`);
 
   // Scenario 5: the unpublished 4th photo must not appear
-  const names = (gallery?.photos ?? []).map((p: any) => p.filename).join(',');
+  const names = (gallery?.photos ?? []).map((p: { filename: string }) => p.filename).join(',');
   ok('Scenario 5: unpublished photo hidden', !names.includes('Behind_The_Scenes_Raw_004'), names);
 
   // Filebase presigned GET actually serves bytes through the deployed app
