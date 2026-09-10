@@ -78,7 +78,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
       },
       { status: 201 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Add member error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

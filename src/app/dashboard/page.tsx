@@ -88,8 +88,8 @@ export default function DashboardPage() {
       setEventDesc('');
       setShowCreateModal(false);
       loadData();
-    } catch (err: any) {
-      setCreateError(err.message);
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setCreating(false);
     }

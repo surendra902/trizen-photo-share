@@ -7,7 +7,6 @@ const registerSchema = z.object({
   email: z.string().email(),
   name: z.string().min(2),
   password: z.string().min(6),
-  role: z.enum(['ADMIN', 'TEAM']).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -21,7 +20,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { email, name, password, role } = parsed.data;
+    const { email, name, password } = parsed.data;
 
     // Check if user exists
     const existing = await prisma.user.findUnique({
@@ -31,9 +30,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 });
     }
 
-    // First user defaults to ADMIN if not specified
+    // Role is never client-selectable: the first registered user becomes ADMIN,
+    // everyone after is TEAM (admins are seeded or promoted in the DB directly).
     const totalUsers = await prisma.user.count();
-    const finalRole: Role = (role as Role) || (totalUsers === 0 ? 'ADMIN' : 'TEAM');
+    const finalRole: Role = totalUsers === 0 ? 'ADMIN' : 'TEAM';
 
     const passwordHash = await hashPassword(password);
     const user = await prisma.user.create({
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Registration error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

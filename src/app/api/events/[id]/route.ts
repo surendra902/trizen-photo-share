@@ -50,7 +50,7 @@ export async function GET(req: NextRequest, props: RouteParams) {
     }
 
     return NextResponse.json({ event });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Event GET error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -132,7 +132,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
       },
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Gallery publish error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -146,6 +146,22 @@ export async function GET(req: NextRequest, props: RouteParams) {
     }
 
     const { id: eventId } = await props.params;
+
+    // Same event-scope check as every other /api/events/[id] route:
+    // admin sees all, team members only events they are assigned to.
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: { members: true },
+    });
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+    }
+    if (user.role !== 'ADMIN' && !event.members.some((m) => m.userId === user.id)) {
+      return NextResponse.json(
+        { error: 'Forbidden: You do not have access to this event' },
+        { status: 403 }
+      );
+    }
 
     const gallery = await prisma.gallery.findUnique({
       where: { eventId },
@@ -169,7 +185,7 @@ export async function GET(req: NextRequest, props: RouteParams) {
         photoCount: gallery._count.photos,
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Gallery GET error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

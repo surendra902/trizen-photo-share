@@ -1,7 +1,5 @@
 # Trizen PhotoShare — Collaborative Event Photography Platform
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com)
-[![Tests](https://img.shields.io/badge/tests-12%20passed-success.svg)](https://github.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3.4-black.svg)](https://nextjs.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.4.0-blue.svg)](https://www.prisma.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
@@ -29,7 +27,7 @@ The repository comes pre-seeded with full operational demo data:
 | **Framework** | Next.js 16 (App Router) + TypeScript | Unified modern full-stack architecture with React 19 server components and type-safe API route handlers. |
 | **Database & ORM** | Prisma ORM with SQLite (Local) / PostgreSQL (Prod) | Schema migrations, type-safety, portable across local development and production cloud DBs (e.g. Neon). |
 | **Authentication** | JWT via `jose` + `bcryptjs` in HTTP-Only Cookies | Edge-compatible, stateless, secure session tokens with role-based claims. |
-| **Object Storage** | AWS S3 / Cloudflare R2 with Local Adapter | Direct client-to-storage presigned PUT/GET URLs keeping image bytes out of the server and database. |
+| **Object Storage** | AWS S3 / Cloudflare R2 with Local Adapter | Direct client-to-storage presigned PUT/GET URLs keeping image bytes out of the server and database. The local dev adapter mimics presigned URLs with HMAC-signed, expiring tokens and confines all reads/writes to the uploads directory. |
 | **Styling** | Tailwind CSS v4 | Responsive, dark-mode glassmorphic user interface. |
 | **Testing** | Node.js Native Test Runner (`node:test` + `node:assert`) | Fast, built-in, zero external version conflicts. |
 
@@ -186,13 +184,13 @@ cd trizen-photo-share
 # 2. Configure environment variables
 cp .env.example .env
 
-# 3. Synchronize database schema (creates dev.db)
+# 3. Synchronize database schema (creates prisma/dev.db)
 npx prisma db push
 
 # 4. Seed demo users, events, photos, and published gallery
 npm run seed
 
-# 5. Run the automated test suite
+# 5. Run the automated test suite (uses its own isolated prisma/test.db — never touches dev.db)
 npm test
 
 # 6. Start development server
@@ -248,11 +246,12 @@ Run the test suite:
 npm test
 ```
 
-The suite covers all 4 mandatory areas:
-- **Area 1**: Authentication, password hashing, JWT claims, role-based authorization.
-- **Area 2**: Cross-event isolation (Scenario 1), role-scoped photo visibility, failed upload handling (Scenario 3).
+The script provisions an isolated SQLite database (`prisma/test.db`, via `.env.test`) and runs the suite against it — your seeded `dev.db` demo data is never modified. The 15 tests cover all 4 mandatory areas plus regression tests for the storage security fixes:
+
+- **Area 1**: Authentication, password hashing, JWT claims, role-based authorization, and a live route-handler test proving registration cannot self-assign the ADMIN role.
+- **Area 2**: Cross-event isolation (Scenario 1), role-scoped photo visibility, failed upload handling (Scenario 3), path-traversal rejection, and presigned URL signature validation.
 - **Area 3**: Gallery publishing workflow, photo curation, re-publishing updates.
-- **Area 4**: PIN encryption, rate-limiting brute-force defense (Scenario 4), unpublished photo isolation (Scenario 5).
+- **Area 4**: PIN hashing, rate-limiting brute-force defense (Scenario 4), gallery session token forging, unpublished photo isolation (Scenario 5).
 
 ---
 
@@ -261,3 +260,5 @@ The suite covers all 4 mandatory areas:
 1. **In-Memory Rate Limiter**: The current rate limiter uses an in-memory sliding window. In multi-instance serverless deployments, upgrading to Redis (e.g. Upstash) provides distributed rate tracking.
 2. **Dynamic Image Thumbnails**: Currently serves original uploaded resolutions; client-side image resizing and responsive srcset with Sharp or Cloudflare Image Resizing can be enabled for ultra-low bandwidth scenarios.
 3. **ZIP Gallery Download**: Clients can download individual high-resolution photos; batch ZIP archive downloads can be added via asynchronous serverless background workers.
+4. **Local Storage Adapter (development only)**: With `STORAGE_DRIVER="local"` the app stores files on disk under `uploads/` behind HMAC-signed, expiring URLs. This is a development convenience; production deployments use S3/R2 presigned URLs exclusively (the local route returns 404 when the S3 driver is active).
+5. **Pending-Upload Cleanup**: Photos whose upload was aborted remain in `PENDING` status and are excluded from all listings; an automated reaper for stale `PENDING` rows is future work.

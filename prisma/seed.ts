@@ -107,7 +107,7 @@ async function main() {
 
   // 5. Seed Published Gallery with PIN: 482917 (PDF Section 5 example)
   const pinHash = await bcrypt.hash('482917', 10);
-  const gallery = await prisma.gallery.create({
+  await prisma.gallery.create({
     data: {
       eventId: event.id,
       slug: 'arjun-priya-wedding',

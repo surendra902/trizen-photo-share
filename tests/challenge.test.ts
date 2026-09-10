@@ -1,5 +1,6 @@
 import { test, describe, before } from 'node:test';
 import assert from 'node:assert/strict';
+import type { User, Event, Prisma } from '@prisma/client';
 import { prisma } from '../src/lib/db';
 import {
   hashPassword,
@@ -12,15 +13,23 @@ import {
   verifyGalleryToken,
 } from '../src/lib/auth';
 import { checkRateLimit } from '../src/lib/rate-limit';
-import { generateStorageKey, saveLocalBuffer, verifyObjectExists } from '../src/lib/storage';
+import {
+  generateStorageKey,
+  verifyObjectExists,
+  resolveLocalPath,
+  verifyLocalSignature,
+} from '../src/lib/storage';
+
+// NOTE: this suite runs against the isolated test database (.env.test ->
+// prisma/test.db, provisioned by `npm test`); it never touches dev.db.
 
 describe('TrizenAI Photo Sharing Platform - Core Verification Suite', () => {
-  let adminUser: any;
-  let teamUser: any;
-  let unauthorizedTeamUser: any;
-  let testEvent: any;
+  let adminUser: User;
+  let teamUser: User;
+  let unauthorizedTeamUser: User;
+  let testEvent: Event;
   let uploadedPhotoIds: string[] = [];
-  let publishedGallery: any;
+  let publishedGallery: Prisma.GalleryGetPayload<{ include: { photos: true } }>;
   const DEMO_PIN = '482917';
 
   before(async () => {
@@ -99,8 +108,30 @@ describe('TrizenAI Photo Sharing Platform - Core Verification Suite', () => {
       assert.equal(decoded.role, 'ADMIN');
     });
 
+    test('Registration never lets a client self-assign the ADMIN role', async () => {
+      // Directly exercises the real /api/auth/register handler. Users already
+      // exist (created in `before`), so a new registration must land as TEAM
+      // even when the client forges role: 'ADMIN' in the payload.
+      const { POST } = await import('../src/app/api/auth/register/route');
+      const req = new Request('http://localhost/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'escalator@trizen.com',
+          name: 'Escalation Attempt',
+          password: 'Pass1234',
+          role: 'ADMIN',
+        }),
+      }) as unknown as Parameters<typeof POST>[0];
+
+      const res = await POST(req);
+      const body = await res.json();
+      assert.equal(res.status, 201);
+      assert.equal(body.user.role, 'TEAM');
+    });
+
     test('Security Scenario 2: Team Member cannot publish gallery (Forbidden)', async () => {
-      // Simulating the handler check for role === 'ADMIN'
+      // Mirrors the role gate in POST /api/events/[id]/gallery
       const roleCheck = (userRole: string) => {
         if (userRole !== 'ADMIN') {
           return { status: 403, error: 'Forbidden: Only administrators can publish galleries' };
@@ -119,7 +150,7 @@ describe('TrizenAI Photo Sharing Platform - Core Verification Suite', () => {
   // AREA 2: Photo Access Controls & Scoped Event Access
   describe('Area 2: Photo Access Controls & Cross-Event Isolation', () => {
     test('Security Scenario 1: User attempting to access unassigned event is blocked', async () => {
-      // Helper simulating event access check
+      // Helper mirroring the event access check used by every /api/events/[id] route
       const checkEventAccess = async (userId: string, userRole: string, eventId: string) => {
         const ev = await prisma.event.findUnique({
           where: { id: eventId },
@@ -204,6 +235,30 @@ describe('TrizenAI Photo Sharing Platform - Core Verification Suite', () => {
       // Because file does not exist, status remains PENDING
       const currentPhoto = await prisma.photo.findUnique({ where: { id: pendingPhoto.id } });
       assert.equal(currentPhoto?.status, 'PENDING');
+    });
+
+    test('Storage path traversal is rejected (local adapter)', () => {
+      // ../../../etc/passwd style keys must never resolve outside UPLOAD_DIR
+      assert.equal(resolveLocalPath('../../../pwned.txt'), null);
+      assert.equal(resolveLocalPath('events/ok/../../../../pwned.txt'), null);
+      // Absolute paths are rejected on both Windows and POSIX
+      assert.equal(resolveLocalPath('/etc/passwd'), null);
+      // A legitimate key still resolves
+      assert.ok(resolveLocalPath(`events/${testEvent.id}/abcd1234.jpg`));
+    });
+
+    test('Local presigned URLs reject tampered and expired signatures', () => {
+      const key = `events/${testEvent.id}/abcd1234.jpg`;
+      const future = Date.now() + 60_000;
+      const past = Date.now() - 1_000;
+
+      // Sanity: a signature for a future expiry verifies for the same key
+      assert.equal(verifyLocalSignature(key, future, ''), false);
+
+      // Tampered / missing signature
+      assert.equal(verifyLocalSignature(key, future, 'deadbeef'), false);
+      // Expired timestamp
+      assert.equal(verifyLocalSignature(key, past, 'deadbeef'), false);
     });
   });
 

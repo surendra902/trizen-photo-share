@@ -89,7 +89,7 @@ export async function GET(req: NextRequest, props: RouteParams) {
       totalPhotos: photosWithUrls.length,
       photos: photosWithUrls,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Gallery photos GET error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

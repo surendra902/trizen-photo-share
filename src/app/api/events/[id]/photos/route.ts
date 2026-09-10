@@ -40,7 +40,7 @@ export async function GET(req: NextRequest, props: RouteParams) {
 
     // Role-based photo query:
     // ADMIN sees all uploaded photos; TEAM sees only their own uploaded photos
-    const photoWhere: any = {
+    const photoWhere: { eventId: string; status: string; uploadedById?: string } = {
       eventId,
       status: 'UPLOADED',
     };
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest, props: RouteParams) {
     );
 
     return NextResponse.json({ photos: photosWithUrls });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Photos GET error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -118,7 +118,7 @@ export async function DELETE(req: NextRequest, props: RouteParams) {
     await prisma.photo.delete({ where: { id: photoId } });
 
     return NextResponse.json({ success: true, deletedPhotoId: photoId });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Photos DELETE error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

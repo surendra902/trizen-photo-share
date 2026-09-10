@@ -40,7 +40,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const router = useRouter();
 
   const [userRole, setUserRole] = useState<'ADMIN' | 'TEAM'>('TEAM');
-  const [userId, setUserId] = useState<string>('');
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,7 +76,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       }
       const me = await meRes.json();
       setUserRole(me.user.role);
-      setUserId(me.user.id);
 
       // 2. Event details
       const evRes = await fetch(`/api/events/${eventId}`);
@@ -105,7 +103,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           setSelectedPhotoIds(alreadyPublished);
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
@@ -134,8 +132,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       setMemberEmail('');
       setMemberMessage(`Added ${data.member?.name || 'member'} successfully!`);
       loadEventAndPhotos();
-    } catch (err: any) {
-      setMemberMessage(`Error: ${err.message}`);
+    } catch (err) {
+      setMemberMessage(`Error: ${err instanceof Error ? err.message : 'Something went wrong'}`);
     } finally {
       setAddingMember(false);
     }
@@ -220,10 +218,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
           setUploadsList((prev) =>
             prev.map((item, idx) => (idx === i ? { ...item, status: 'success', progress: 100 } : item))
           );
-        } catch (fileErr: any) {
+        } catch (fileErr) {
           setUploadsList((prev) =>
             prev.map((item, idx) =>
-              idx === i ? { ...item, status: 'error', error: fileErr.message } : item
+              idx === i ? { ...item, status: 'error', error: fileErr instanceof Error ? fileErr.message : 'Upload failed' } : item
             )
           );
         }
@@ -231,7 +229,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
       // Refresh photo listing
       await loadEventAndPhotos();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Upload error:', err);
     } finally {
       setIsUploading(false);
@@ -283,8 +281,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       });
 
       await loadEventAndPhotos();
-    } catch (err: any) {
-      alert(`Publishing error: ${err.message}`);
+    } catch (err) {
+      alert(`Publishing error: ${err instanceof Error ? err.message : 'Something went wrong'}`);
     } finally {
       setPublishing(false);
     }
@@ -304,8 +302,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         const data = await res.json();
         alert(data.error || 'Delete failed');
       }
-    } catch (err: any) {
-      alert(`Delete error: ${err.message}`);
+    } catch (err) {
+      alert(`Delete error: ${err instanceof Error ? err.message : 'Something went wrong'}`);
     }
   };
 

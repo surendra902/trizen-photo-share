@@ -44,8 +44,8 @@ function LoginForm() {
       const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
       router.push(callbackUrl);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setLoading(false);
     }

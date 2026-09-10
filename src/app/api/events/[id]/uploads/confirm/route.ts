@@ -36,6 +36,14 @@ export async function POST(req: NextRequest, props: RouteParams) {
       return NextResponse.json({ error: 'Photo record not found' }, { status: 404 });
     }
 
+    // Only the uploading user (or an admin) may confirm this photo.
+    if (user.role !== 'ADMIN' && photo.uploadedById !== user.id) {
+      return NextResponse.json(
+        { error: 'Forbidden: You can only confirm your own uploads' },
+        { status: 403 }
+      );
+    }
+
     // Security Scenario #3: Verify object exists before updating metadata to UPLOADED
     const exists = await verifyObjectExists(photo.storageKey);
     if (!exists) {
@@ -55,7 +63,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
     });
 
     return NextResponse.json({ success: true, photo: updated });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Confirm upload error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

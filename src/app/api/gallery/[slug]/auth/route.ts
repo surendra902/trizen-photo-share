@@ -74,7 +74,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
     });
 
     return response;
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Gallery PIN auth error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

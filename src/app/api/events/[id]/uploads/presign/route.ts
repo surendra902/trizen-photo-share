@@ -87,7 +87,7 @@ export async function POST(req: NextRequest, props: RouteParams) {
     }
 
     return NextResponse.json({ uploads }, { status: 201 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Presign upload error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

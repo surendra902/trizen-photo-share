@@ -78,8 +78,8 @@ export default function CustomerGalleryPage({ params }: { params: Promise<{ slug
       }
 
       await checkAccessAndLoad();
-    } catch (err: any) {
-      setPinError(err.message);
+    } catch (err) {
+      setPinError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setPinLoading(false);
     }
@@ -146,7 +146,7 @@ export default function CustomerGalleryPage({ params }: { params: Promise<{ slug
           </form>
 
           <p className="text-[11px] text-slate-500">
-            Protected by secure end-to-end PIN encryption. No login required.
+            PIN is verified server-side against a salted hash. Verified sessions expire after 24 hours.
           </p>
         </div>
       </div>
