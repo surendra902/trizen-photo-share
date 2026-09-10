@@ -30,7 +30,7 @@ The repository comes pre-seeded with full operational demo data:
 | **Database & ORM** | Prisma ORM with PostgreSQL (Neon) | Schema migrations, type-safety; the same Neon connection string serves local dev and production. |
 | **Authentication** | JWT via `jose` + `bcryptjs` in HTTP-Only Cookies | Edge-compatible, stateless, secure session tokens with role-based claims. |
 | **Object Storage** | Filebase (S3-compatible) with Local Adapter | Direct client-to-storage presigned PUT/GET URLs keeping image bytes out of the server and database. The local dev adapter mimics presigned URLs with HMAC-signed, expiring tokens and confines all reads/writes to the uploads directory. |
-| **Styling** | Tailwind CSS v4 | Responsive, dark-mode glassmorphic user interface. |
+| **Styling** | Tailwind CSS v4 | Responsive, editorial dark UI (Fraunces / Inter / Geist Mono, brass accent). |
 | **Testing** | Node.js Native Test Runner (`node:test` + `node:assert`) | Fast, built-in, zero external version conflicts. |
 
 ---
