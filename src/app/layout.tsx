@@ -1,16 +1,24 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Fraunces, Inter, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const fraunces = Fraunces({
+  variable: '--font-fraunces',
   subsets: ['latin'],
+  display: 'swap',
+});
+
+const inter = Inter({
+  variable: '--font-inter',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -25,52 +33,36 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}>
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white font-sans">
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-ink text-paper">
         {/* Global Navigation Header */}
-        <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="w-5 h-5"
-                >
-                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-                  <circle cx="12" cy="13" r="3" />
-                </svg>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
-                  Trizen PhotoShare
-                </span>
-              </div>
+        <header className="sticky top-0 z-40 w-full border-b border-line-soft bg-ink/85 backdrop-blur-md">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+            <Link href="/" className="flex items-baseline gap-2 group">
+              <span className="font-display text-2xl leading-none tracking-tight">
+                Trizen<span className="text-accent">.</span>
+              </span>
+              <span className="eyebrow hidden sm:inline pb-0.5">PhotoShare</span>
             </Link>
 
-            <nav className="flex items-center gap-4">
+            <nav className="flex items-center gap-5 sm:gap-7">
               <Link
                 href="/gallery/arjun-priya-wedding"
-                className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors flex items-center gap-1.5"
+                className="link-underline text-sm text-muted hover:text-paper transition-colors hidden sm:inline-flex items-center gap-2"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
                 Demo Gallery
               </Link>
               <Link
                 href="/dashboard"
-                className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3 py-1.5 rounded-lg hover:bg-slate-800/50 transition-colors"
+                className="link-underline text-sm text-muted hover:text-paper transition-colors"
               >
                 Dashboard
               </Link>
-              <Link
-                href="/login"
-                className="text-xs sm:text-sm font-medium bg-gradient-to-r from-indigo-500 to-violet-600 text-white px-4 py-2 rounded-lg shadow-sm hover:from-indigo-600 hover:to-violet-700 transition-all active:scale-95"
-              >
+              <Link href="/login" className="btn btn-primary !px-5 !py-2 text-sm">
                 Sign In
               </Link>
             </nav>
@@ -81,13 +73,19 @@ export default function RootLayout({
         <main className="flex-1 flex flex-col">{children}</main>
 
         {/* Footer */}
-        <footer className="border-t border-slate-800/60 bg-slate-950 py-8 text-slate-500 text-xs text-center">
-          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p>© 2026 TrizenAI Internship Challenge. Built with Next.js, Prisma, and Cloud Object Storage.</p>
-            <div className="flex gap-4">
-              <span>Demo PIN: <strong className="text-slate-300">482917</strong></span>
-              <span>•</span>
-              <span>Roles: <strong className="text-slate-300">Admin & Team</strong></span>
+        <footer className="border-t border-line-soft bg-ink">
+          <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <p className="text-faint">
+              © 2026 TrizenAI Internship Challenge — built with Next.js, Prisma & cloud object storage.
+            </p>
+            <div className="flex items-center gap-4 text-faint font-mono">
+              <span>
+                Demo PIN <span className="text-accent">482917</span>
+              </span>
+              <span className="text-line">/</span>
+              <span>
+                Roles <span className="text-muted">Admin · Team</span>
+              </span>
             </div>
           </div>
         </footer>

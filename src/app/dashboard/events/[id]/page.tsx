@@ -309,9 +309,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8 text-slate-400 text-sm">
-        <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mr-3"></div>
-        Loading event details...
+      <div className="flex-1 flex items-center justify-center p-8 text-muted text-sm">
+        <div className="w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin mr-3"></div>
+        Loading event details…
       </div>
     );
   }
@@ -320,19 +320,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   if (forbiddenError) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="max-w-md w-full p-8 rounded-2xl border border-red-500/30 bg-red-500/10 text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center mx-auto">
+        <div className="max-w-md w-full card border-red-500/40 p-8 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full border border-red-500/40 bg-red-500/10 text-red-400 flex items-center justify-center mx-auto">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m0 0v.01M12 9v2m0-6a9 9 0 110 18 9 9 0 010-18z" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-white">403 Forbidden</h2>
-          <p className="text-xs text-red-300">{forbiddenError}</p>
-          <Link
-            href="/dashboard"
-            className="inline-block px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition-colors"
-          >
-            Return to Dashboard
+          <h2 className="font-display text-2xl">403 — Forbidden</h2>
+          <p className="text-sm text-red-300">{forbiddenError}</p>
+          <Link href="/dashboard" className="btn btn-ghost !py-2.5 text-sm inline-flex">
+            Return to dashboard
           </Link>
         </div>
       </div>
@@ -342,36 +339,34 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   if (!event) return null;
 
   return (
-    <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="flex-1 max-w-6xl w-full mx-auto px-5 sm:px-8 py-10 space-y-10">
       {/* Breadcrumb & Navigation */}
-      <div className="flex items-center gap-2 text-xs text-slate-400">
-        <Link href="/dashboard" className="hover:text-white transition-colors">
-          Dashboard
+      <div className="flex items-center gap-2 text-xs font-mono text-faint">
+        <Link href="/dashboard" className="hover:text-paper transition-colors">
+          dashboard
         </Link>
-        <span>/</span>
-        <span className="text-slate-200 font-medium">{event.name}</span>
+        <span className="text-line">/</span>
+        <span className="text-muted">{event.name}</span>
       </div>
 
-      {/* Event Header Banner */}
-      <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-1.5">
+      {/* Event Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-line-soft pb-8">
+        <div className="space-y-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">{event.name}</h1>
-            {event.gallery ? (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                Published
-              </span>
-            ) : (
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
-                Draft
-              </span>
-            )}
+            <h1 className="font-display text-4xl tracking-tight">{event.name}</h1>
+            <span className={`eyebrow ${event.gallery ? 'text-accent' : 'text-faint'}`}>
+              {event.gallery ? '● Live' : '○ Draft'}
+            </span>
           </div>
-          {event.description && <p className="text-xs text-slate-400">{event.description}</p>}
-          <div className="flex items-center gap-4 text-xs text-slate-500 pt-1">
-            <span>Created by: <strong className="text-slate-300">{event.createdBy.name}</strong></span>
-            <span>•</span>
-            <span>Total Photos: <strong className="text-slate-300">{photos.length}</strong></span>
+          {event.description && <p className="text-muted leading-relaxed">{event.description}</p>}
+          <div className="flex items-center gap-4 text-xs font-mono text-faint pt-1">
+            <span>
+              by <span className="text-muted">{event.createdBy.name}</span>
+            </span>
+            <span className="text-line">/</span>
+            <span>
+              <span className="text-muted">{photos.length}</span> photos
+            </span>
           </div>
         </div>
 
@@ -381,9 +376,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             <Link
               href={`/gallery/${event.gallery.slug}`}
               target="_blank"
-              className="px-4 py-2.5 rounded-xl border border-pink-500/30 bg-pink-500/10 hover:bg-pink-500/20 text-pink-300 text-xs font-semibold transition-colors flex items-center gap-1.5"
+              className="btn btn-ghost !py-2.5 text-sm"
             >
-              Customer Link ↗
+              Customer link ↗
             </Link>
           )}
 
@@ -394,9 +389,9 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 setShowPublishModal(true);
               }}
               disabled={selectedPhotoIds.length === 0}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-semibold shadow-md transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="btn btn-primary !py-2.5 text-sm"
             >
-              Publish Gallery ({selectedPhotoIds.length} Selected)
+              Publish gallery ({selectedPhotoIds.length})
             </button>
           )}
         </div>
@@ -404,51 +399,45 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* Admin Only: Team Member Assignment Section */}
       {userRole === 'ADMIN' && (
-        <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900/40 space-y-4">
-          <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-            Assigned Photographers / Team Members
-          </h2>
+        <div className="card p-6 space-y-4">
+          <p className="eyebrow">Assigned photographers</p>
 
           <div className="flex flex-wrap items-center gap-2">
             {event.members.length === 0 ? (
-              <span className="text-xs text-slate-500">No team members assigned yet.</span>
+              <span className="text-sm text-faint">No team members assigned yet.</span>
             ) : (
               event.members.map((m) => (
                 <div
                   key={m.user.id}
-                  className="px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-800/80 text-xs text-slate-200 flex items-center gap-2"
+                  className="px-3 py-1.5 rounded-full border border-line bg-ink-sunken text-xs flex items-center gap-2"
                 >
-                  <span className="w-2 h-2 rounded-full bg-purple-400"></span>
-                  <span>{m.user.name}</span>
-                  <span className="text-[10px] text-slate-400">({m.user.email})</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent"></span>
+                  <span className="text-paper">{m.user.name}</span>
+                  <span className="text-faint font-mono">{m.user.email}</span>
                 </div>
               ))
             )}
           </div>
 
-          <form onSubmit={handleAddMember} className="flex gap-2 max-w-md pt-2">
+          <form onSubmit={handleAddMember} className="flex gap-2 max-w-md pt-1">
             <input
               type="email"
               required
               value={memberEmail}
               onChange={(e) => setMemberEmail(e.target.value)}
-              placeholder="team member email (e.g. team@trizen.com)"
-              className="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-xs focus:outline-none focus:border-indigo-500"
+              placeholder="team@trizen.com"
+              className="field flex-1 !py-2.5"
             />
-            <button
-              type="submit"
-              disabled={addingMember}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors disabled:opacity-50"
-            >
-              {addingMember ? 'Adding...' : 'Assign Member'}
+            <button type="submit" disabled={addingMember} className="btn btn-ghost !py-2.5 text-sm shrink-0">
+              {addingMember ? 'Adding…' : 'Assign'}
             </button>
           </form>
-          {memberMessage && <p className="text-xs text-indigo-400">{memberMessage}</p>}
+          {memberMessage && <p className="text-xs text-accent font-mono">{memberMessage}</p>}
         </div>
       )}
 
       {/* Upload Zone (Both Admin & Team) */}
-      <div className="p-6 rounded-2xl border-2 border-dashed border-slate-800 hover:border-indigo-500/50 bg-slate-900/30 transition-all text-center space-y-4">
+      <div className="p-8 rounded-xl border border-dashed border-line hover:border-accent/60 bg-ink-raised/40 transition-all text-center space-y-4">
         <input
           ref={fileInputRef}
           type="file"
@@ -460,42 +449,40 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         />
         <label
           htmlFor="photo-upload-input"
-          className="cursor-pointer inline-flex flex-col items-center justify-center space-y-2"
+          className="cursor-pointer inline-flex flex-col items-center justify-center space-y-3"
         >
-          <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full border border-line bg-ink-sunken text-accent flex items-center justify-center">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
           </div>
-          <p className="text-sm font-semibold text-slate-200">
-            Click to choose photos or drag and drop
-          </p>
-          <p className="text-xs text-slate-500">
-            Supports multiple high-resolution photos (JPEG, PNG, WebP)
+          <p className="font-display text-lg">Add photographs</p>
+          <p className="text-xs text-faint font-mono">
+            Click to choose — multiple high-res files (JPEG, PNG, WebP)
           </p>
         </label>
 
         {/* Uploads Progress List */}
         {uploadsList.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-slate-800 text-left space-y-2 max-w-xl mx-auto">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-              <span>Upload Queue ({uploadsList.length} files)</span>
-              {isUploading && <span className="text-indigo-400 animate-pulse">Uploading in progress...</span>}
+          <div className="mt-4 pt-4 border-t border-line-soft text-left space-y-2 max-w-xl mx-auto">
+            <div className="flex items-center justify-between eyebrow mb-1">
+              <span>Upload queue ({uploadsList.length})</span>
+              {isUploading && <span className="text-accent">uploading…</span>}
             </div>
             {uploadsList.map((item, idx) => (
               <div
                 key={idx}
-                className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 text-xs flex items-center justify-between gap-3"
+                className="p-2.5 rounded-lg bg-ink-sunken border border-line text-xs flex items-center justify-between gap-3 font-mono"
               >
-                <span className="truncate max-w-[200px] text-slate-300 font-mono">{item.filename}</span>
+                <span className="truncate max-w-[200px] text-muted">{item.filename}</span>
                 <div className="flex items-center gap-2 shrink-0">
-                  {item.status === 'pending' && <span className="text-slate-500">Queued</span>}
-                  {item.status === 'uploading' && <span className="text-indigo-400">Direct S3 Upload...</span>}
-                  {item.status === 'confirming' && <span className="text-amber-400">Verifying...</span>}
-                  {item.status === 'success' && <span className="text-emerald-400 font-semibold">✓ Uploaded</span>}
+                  {item.status === 'pending' && <span className="text-faint">queued</span>}
+                  {item.status === 'uploading' && <span className="text-accent">→ storage</span>}
+                  {item.status === 'confirming' && <span className="text-accent-soft">verifying</span>}
+                  {item.status === 'success' && <span className="text-emerald-400">✓ done</span>}
                   {item.status === 'error' && (
-                    <span className="text-red-400 font-semibold" title={item.error}>
-                      ✗ Failed
+                    <span className="text-red-400" title={item.error}>
+                      ✗ failed
                     </span>
                   )}
                 </div>
@@ -506,13 +493,13 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       </div>
 
       {/* Photo Grid Section */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-line-soft pb-4">
           <div>
-            <h2 className="text-lg font-bold text-white">
-              {userRole === 'ADMIN' ? 'All Uploaded Photos' : 'Your Uploaded Photos'}
+            <h2 className="font-display text-2xl tracking-tight">
+              {userRole === 'ADMIN' ? 'All uploaded photos.' : 'Your uploaded photos.'}
             </h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-sm text-muted mt-1">
               {userRole === 'ADMIN'
                 ? 'Select the photographs to include in the published client gallery.'
                 : 'Showing photographs you contributed to this event.'}
@@ -521,28 +508,20 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
           {userRole === 'ADMIN' && photos.length > 0 && (
             <div className="flex items-center gap-2">
-              <button
-                onClick={selectAllPhotos}
-                className="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-xs font-medium text-slate-300 transition-colors"
-              >
-                Select All
+              <button onClick={selectAllPhotos} className="btn btn-ghost !py-2 !px-4 text-xs">
+                Select all
               </button>
-              <button
-                onClick={deselectAllPhotos}
-                className="px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 text-xs font-medium text-slate-300 transition-colors"
-              >
-                Deselect All
+              <button onClick={deselectAllPhotos} className="btn btn-ghost !py-2 !px-4 text-xs">
+                Clear
               </button>
             </div>
           )}
         </div>
 
         {photos.length === 0 ? (
-          <div className="p-12 text-center rounded-2xl border border-slate-800 bg-slate-900/30">
-            <p className="text-sm font-semibold text-slate-300">No photos uploaded yet</p>
-            <p className="text-xs text-slate-500 mt-1">
-              Use the upload zone above to upload event photographs.
-            </p>
+          <div className="p-16 text-center rounded-xl border border-line">
+            <p className="font-display text-xl">No photos uploaded yet</p>
+            <p className="text-sm text-muted mt-2">Use the upload zone above to add event photographs.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -551,14 +530,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               return (
                 <div
                   key={photo.id}
-                  className={`group relative rounded-xl border overflow-hidden transition-all bg-slate-900 ${
-                    isSelected
-                      ? 'border-indigo-500 ring-2 ring-indigo-500/30'
-                      : 'border-slate-800 hover:border-slate-700'
+                  className={`group relative rounded-lg border overflow-hidden transition-all bg-ink-raised ${
+                    isSelected ? 'border-accent ring-2 ring-accent/30' : 'border-line hover:border-line'
                   }`}
                 >
                   {/* Image Aspect Box */}
-                  <div className="aspect-square bg-slate-950 relative overflow-hidden">
+                  <div className="aspect-square bg-ink-sunken relative overflow-hidden">
                     <img
                       src={photo.viewUrl}
                       alt={photo.filename}
@@ -573,9 +550,10 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                         onClick={() => togglePhotoSelection(photo.id)}
                         className={`absolute top-2 left-2 w-6 h-6 rounded-md flex items-center justify-center transition-all ${
                           isSelected
-                            ? 'bg-indigo-600 text-white shadow-md'
+                            ? 'bg-accent text-ink shadow-md'
                             : 'bg-black/60 text-transparent border border-white/40 hover:border-white'
                         }`}
+                        aria-label="Select photo"
                       >
                         ✓
                       </button>
@@ -584,8 +562,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                     {/* Status Badge */}
                     <div className="absolute top-2 right-2 flex gap-1">
                       {photo.isPublished && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/80 text-white backdrop-blur-sm">
-                          Published
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-accent/90 text-ink backdrop-blur-sm">
+                          Live
                         </span>
                       )}
                     </div>
@@ -593,21 +571,21 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
                   {/* Metadata Bar */}
                   <div className="p-2.5 text-[11px] space-y-1">
-                    <p className="font-medium text-slate-200 truncate" title={photo.filename}>
+                    <p className="text-paper truncate font-mono" title={photo.filename}>
                       {photo.filename}
                     </p>
-                    <div className="flex items-center justify-between text-[10px] text-slate-500">
+                    <div className="flex items-center justify-between text-[10px] text-faint font-mono">
                       <span>{(photo.fileSize / 1024).toFixed(0)} KB</span>
                       <span className="truncate max-w-[80px]">{photo.uploadedBy.name}</span>
                     </div>
 
                     {/* Admin Delete Action */}
                     {userRole === 'ADMIN' && (
-                      <div className="pt-1 border-t border-slate-800/80 flex justify-end">
+                      <div className="pt-1 border-t border-line-soft flex justify-end">
                         <button
                           type="button"
                           onClick={() => handleDeletePhoto(photo.id)}
-                          className="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+                          className="text-[10px] text-faint hover:text-red-400 transition-colors"
                         >
                           Delete
                         </button>
@@ -623,31 +601,30 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* Publish Gallery Modal (Admin Only) */}
       {showPublishModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-md p-6 rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl">
-            <h2 className="text-lg font-bold text-white mb-2">Publish Customer Gallery</h2>
-            <p className="text-xs text-slate-400 mb-4">
-              Publish {selectedPhotoIds.length} selected photos for &quot;{event.name}&quot;. Customers can
-              access the gallery securely using a PIN without creating an account.
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/80 backdrop-blur-sm">
+          <div className="w-full max-w-md card p-7 shadow-2xl">
+            <p className="eyebrow mb-2">Publish</p>
+            <h2 className="font-display text-2xl tracking-tight mb-2">Customer gallery.</h2>
+            <p className="text-sm text-muted mb-5">
+              Publish {selectedPhotoIds.length} selected photos for &quot;{event.name}&quot;. Customers
+              access the gallery with a PIN — no account required.
             </p>
 
             {!publishResult ? (
               <form onSubmit={handlePublish} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Access PIN (6 digits)
-                  </label>
+                  <label className="eyebrow block mb-2">Access PIN</label>
                   <input
                     type="text"
                     maxLength={8}
                     pattern="\d{4,8}"
                     value={pinInput}
                     onChange={(e) => setPinInput(e.target.value)}
-                    placeholder="Leave blank to auto-generate (e.g. 482917)"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm font-mono focus:outline-none focus:border-indigo-500"
+                    placeholder="Leave blank to auto-generate"
+                    className="field font-mono"
                   />
-                  <p className="text-[10px] text-slate-500 mt-1">
-                    Only customers entering this PIN will be granted access to view the photos.
+                  <p className="text-xs text-faint mt-1.5">
+                    Only customers entering this PIN can view the photos.
                   </p>
                 </div>
 
@@ -655,39 +632,35 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   <button
                     type="button"
                     onClick={() => setShowPublishModal(false)}
-                    className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white"
+                    className="btn btn-ghost !py-2.5 text-sm"
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    disabled={publishing}
-                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white text-xs font-semibold shadow-md transition-all disabled:opacity-50"
-                  >
-                    {publishing ? 'Publishing...' : 'Publish Now'}
+                  <button type="submit" disabled={publishing} className="btn btn-primary !py-2.5 text-sm">
+                    {publishing ? 'Publishing…' : 'Publish now'}
                   </button>
                 </div>
               </form>
             ) : (
               <div className="space-y-4">
-                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 text-xs">
-                  ✓ Gallery published successfully! Share these credentials with your client:
+                <div className="p-3.5 rounded-lg border border-accent/40 bg-accent-dim/40 text-accent-soft text-sm">
+                  ✓ Gallery published. Share these credentials with your client:
                 </div>
 
-                <div className="space-y-2 text-xs font-mono bg-slate-950 p-4 rounded-xl border border-slate-800">
+                <div className="space-y-3 font-mono text-xs bg-ink-sunken p-4 rounded-lg border border-line">
                   <div>
-                    <span className="text-slate-500 block mb-0.5">Gallery URL:</span>
+                    <span className="text-faint block mb-1">gallery url</span>
                     <a
                       href={publishResult.galleryUrl}
                       target="_blank"
-                      className="text-indigo-400 hover:underline break-all"
+                      className="link-underline text-accent break-all"
                     >
                       {publishResult.galleryUrl}
                     </a>
                   </div>
-                  <div className="pt-2 border-t border-slate-800">
-                    <span className="text-slate-500 block mb-0.5">Access PIN:</span>
-                    <span className="text-xl font-bold text-white tracking-widest">
+                  <div className="pt-3 border-t border-line">
+                    <span className="text-faint block mb-1">access pin</span>
+                    <span className="font-display text-2xl text-paper tracking-widest">
                       {publishResult.pin}
                     </span>
                   </div>
@@ -696,7 +669,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <button
                   type="button"
                   onClick={() => setShowPublishModal(false)}
-                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-colors"
+                  className="btn btn-ghost w-full !py-2.5 text-sm"
                 >
                   Done
                 </button>

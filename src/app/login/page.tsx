@@ -62,14 +62,17 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md p-8 rounded-2xl border border-slate-800 bg-slate-900/80 backdrop-blur-xl shadow-2xl">
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-white tracking-tight">Sign In to Trizen</h1>
-        <p className="text-xs text-slate-400 mt-2">Access your event management or photography workspace</p>
+    <div className="w-full max-w-md card p-8 rise">
+      <div className="mb-8">
+        <p className="eyebrow mb-3">Staff Portal</p>
+        <h1 className="font-display text-3xl tracking-tight">Sign in.</h1>
+        <p className="text-sm text-muted mt-2">
+          Access your event management or photography workspace.
+        </p>
       </div>
 
       {error && (
-        <div className="mb-6 p-3.5 rounded-xl border border-red-500/30 bg-red-500/10 text-red-400 text-xs flex items-center gap-2">
+        <div className="mb-6 p-3.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-300 text-sm flex items-center gap-2">
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -79,65 +82,59 @@ function LoginForm() {
 
       {/* 1-Click Demo Buttons */}
       <div className="mb-6">
-        <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2 text-center">
-          1-Click Auto Fill Demo
-        </span>
+        <span className="eyebrow block mb-2.5">One-click demo fill</span>
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setDemoCreds('ADMIN')}
-            className="py-2 px-3 rounded-lg border border-indigo-500/40 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-medium transition-colors"
+            className="btn btn-ghost !py-2.5 text-sm"
           >
-            Admin Demo
+            Admin
           </button>
           <button
             type="button"
             onClick={() => setDemoCreds('TEAM')}
-            className="py-2 px-3 rounded-lg border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-medium transition-colors"
+            className="btn btn-ghost !py-2.5 text-sm"
           >
-            Team Demo
+            Team
           </button>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
+          <label className="eyebrow block mb-2">Email address</label>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="name@domain.com"
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="field"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+          <label className="eyebrow block mb-2">Password</label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-100 text-sm placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+            className="field"
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {loading ? 'Authenticating...' : 'Sign In'}
+        <button type="submit" disabled={loading} className="btn btn-primary w-full !mt-2">
+          {loading ? 'Authenticating…' : 'Sign in'}
         </button>
       </form>
 
-      <div className="mt-6 text-center text-xs text-slate-400">
+      <div className="mt-6 text-sm text-muted">
         Don&apos;t have an account?{' '}
-        <Link href="/register" className="font-semibold text-indigo-400 hover:text-indigo-300">
-          Create one now
+        <Link href="/register" className="link-underline text-accent font-medium">
+          Create one
         </Link>
       </div>
     </div>
@@ -146,8 +143,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="flex-1 flex items-center justify-center p-4">
-      <Suspense fallback={<div className="text-slate-400 text-sm">Loading...</div>}>
+    <div className="flex-1 flex items-center justify-center p-5">
+      <Suspense fallback={<div className="text-muted text-sm">Loading…</div>}>
         <LoginForm />
       </Suspense>
     </div>

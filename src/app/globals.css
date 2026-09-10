@@ -1,26 +1,190 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  Trizen PhotoShare — "Editorial Darkroom" design system.
+  Warm near-black canvas, off-white paper text, a single brass accent.
+  Display serif (Fraunces) for headlines, Inter for UI, mono for labels.
+*/
+
+@theme {
+  --color-ink: #0c0a08;         /* page background — warm near-black */
+  --color-ink-raised: #17130d;  /* cards / raised surfaces */
+  --color-ink-sunken: #080706;  /* insets — inputs, code, wells */
+  --color-line: #2a241b;        /* hairline borders (warm) */
+  --color-line-soft: #1c1813;   /* fainter dividers */
+  --color-paper: #f4eee3;       /* primary text — warm off-white */
+  --color-muted: #a89d8b;       /* secondary text */
+  --color-faint: #6d6353;       /* labels, tertiary */
+  --color-accent: #c9a35e;      /* brass / gold */
+  --color-accent-soft: #e4cb93; /* accent hover / highlight */
+  --color-accent-dim: #3a2f18;  /* accent-tinted fills */
+
+  --radius: 0.75rem;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+  }
+
+  * {
+    border-color: var(--color-line);
+  }
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-paper);
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* thin, unobtrusive scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* Editorial display type */
+  .font-display {
+    font-family: var(--font-display), Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  /* Mono, tracked, uppercase kicker used above headings and as section numbers */
+  .eyebrow {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.72rem;
+    line-height: 1;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+  }
+
+  /* Buttons — pill, refined */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1;
+    padding: 0.85rem 1.6rem;
+    border-radius: 999px;
+    transition: background-color 0.25s ease, color 0.25s ease,
+      border-color 0.25s ease, transform 0.25s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: #1a1206;
+    font-weight: 600;
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-soft);
+    transform: translateY(-1px);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-paper);
+    border: 1px solid var(--color-line);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  /* Surfaces */
+  .card {
+    background: var(--color-ink-raised);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius);
+  }
+
+  /* Form fields */
+  .field {
+    width: 100%;
+    background: var(--color-ink-sunken);
+    border: 1px solid var(--color-line);
+    border-radius: 0.6rem;
+    padding: 0.8rem 1rem;
+    color: var(--color-paper);
+    font-size: 0.95rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .field::placeholder {
+    color: var(--color-faint);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgb(201 163 94 / 0.12);
+  }
+
+  /* Animated underline for text links */
+  .link-underline {
+    position: relative;
+  }
+  .link-underline::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 1px;
+    width: 100%;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+  }
+  .link-underline:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  /* Entrance animation */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .rise {
+    animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rise {
+      animation: none;
+    }
+  }
 }
