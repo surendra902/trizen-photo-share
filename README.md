@@ -4,6 +4,8 @@
 [![Prisma](https://img.shields.io/badge/Prisma-6.4.0-blue.svg)](https://www.prisma.io/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 
+> **Live demo:** https://trizen-photo-share.vercel.app — gallery `/gallery/arjun-priya-wedding`, PIN `482917` (see §1 for all credentials).
+
 Full-stack event photo sharing application built for the **TrizenAI Full-Stack Internship Challenge**. Enables photography teams to collaboratively upload high-resolution photos for an event, allows an Admin/Lead to consolidate and select photos, and publishes a customer-facing gallery protected by a 6-digit PIN where clients access their photos without creating an account.
 
 ---
