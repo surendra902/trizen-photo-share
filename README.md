@@ -25,7 +25,7 @@ The repository comes pre-seeded with full operational demo data:
 | Layer | Choice | Rationale |
 |---|---|---|
 | **Framework** | Next.js 16 (App Router) + TypeScript | Unified modern full-stack architecture with React 19 server components and type-safe API route handlers. |
-| **Database & ORM** | Prisma ORM with SQLite (Local) / PostgreSQL (Prod) | Schema migrations, type-safety, portable across local development and production cloud DBs (e.g. Neon). |
+| **Database & ORM** | Prisma ORM with PostgreSQL (Neon) | Schema migrations, type-safety; the same Neon connection string serves local dev and production. |
 | **Authentication** | JWT via `jose` + `bcryptjs` in HTTP-Only Cookies | Edge-compatible, stateless, secure session tokens with role-based claims. |
 | **Object Storage** | AWS S3 / Cloudflare R2 with Local Adapter | Direct client-to-storage presigned PUT/GET URLs keeping image bytes out of the server and database. The local dev adapter mimics presigned URLs with HMAC-signed, expiring tokens and confines all reads/writes to the uploads directory. |
 | **Styling** | Tailwind CSS v4 | Responsive, dark-mode glassmorphic user interface. |
@@ -172,8 +172,9 @@ erDiagram
 ## 6. Local Setup & Installation
 
 ### Prerequisites
-- Node.js >= 20.0.0
+- Node.js >= 20.6.0
 - npm >= 10.0.0
+- A free [Neon](https://neon.tech) PostgreSQL database (used for both local dev and production)
 
 ### Step-by-Step Setup
 ```bash
@@ -182,15 +183,16 @@ git clone <repository-url>
 cd trizen-photo-share
 
 # 2. Configure environment variables
-cp .env.example .env
+cp .env.example .env          # set DATABASE_URL to your Neon connection string
+cp .env.test.example .env.test  # set a SECOND throwaway database URL (tests wipe it)
 
-# 3. Synchronize database schema (creates prisma/dev.db)
+# 3. Synchronize database schema (creates the tables on Neon)
 npx prisma db push
 
 # 4. Seed demo users, events, photos, and published gallery
 npm run seed
 
-# 5. Run the automated test suite (uses its own isolated prisma/test.db — never touches dev.db)
+# 5. Run the automated test suite (isolated test DB — never touches your demo data)
 npm test
 
 # 6. Start development server
@@ -198,6 +200,7 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+With `STORAGE_DRIVER="local"` (default in `.env.example`) photos are stored in `./uploads` behind HMAC-signed, expiring URLs — no cloud account needed for local development. Set `STORAGE_DRIVER="s3"` with R2/S3 credentials to use real object storage.
 
 ---
 
@@ -205,7 +208,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 | Variable | Description | Example / Default |
 |---|---|---|
-| `DATABASE_URL` | Database connection string (SQLite for dev, Postgres for prod) | `file:./dev.db` |
+| `DATABASE_URL` | PostgreSQL connection string (Neon) — same for dev and prod | `postgresql://…neon.tech/neondb?sslmode=require` |
 | `JWT_SECRET` | Secret key used to sign and verify JWT session cookies | `super-secret-key-32-chars-min` |
 | `NEXT_PUBLIC_APP_URL` | Public base URL of the deployment | `http://localhost:3000` |
 | `STORAGE_DRIVER` | Storage provider: `"local"` or `"s3"` | `"local"` |
@@ -222,9 +225,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 1. Database (Neon PostgreSQL)
 1. Create a free account at [neon.tech](https://neon.tech) and spin up a new Postgres database.
-2. Copy the pooled connection string into your environment variables as `DATABASE_URL`.
-3. In `prisma/schema.prisma`, switch `provider = "sqlite"` to `provider = "postgresql"`.
-4. Run `npx prisma db push` to generate cloud schema.
+2. Copy the pooled connection string into your environment variables as `DATABASE_URL` (locally and on Vercel).
+3. Run `npx prisma db push` to create the schema.
 
 ### 2. Cloud Storage (Cloudflare R2 or AWS S3)
 1. Create a private bucket (e.g., `trizen-photos`).
@@ -246,7 +248,7 @@ Run the test suite:
 npm test
 ```
 
-The script provisions an isolated SQLite database (`prisma/test.db`, via `.env.test`) and runs the suite against it — your seeded `dev.db` demo data is never modified. The 15 tests cover all 4 mandatory areas plus regression tests for the storage security fixes:
+The script provisions the isolated test database configured in `.env.test` and runs the suite against it — your demo data in the main database is never modified. The 15 tests cover all 4 mandatory areas plus regression tests for the storage security fixes:
 
 - **Area 1**: Authentication, password hashing, JWT claims, role-based authorization, and a live route-handler test proving registration cannot self-assign the ADMIN role.
 - **Area 2**: Cross-event isolation (Scenario 1), role-scoped photo visibility, failed upload handling (Scenario 3), path-traversal rejection, and presigned URL signature validation.
