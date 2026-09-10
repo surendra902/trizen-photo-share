@@ -27,7 +27,7 @@ The repository comes pre-seeded with full operational demo data:
 | **Framework** | Next.js 16 (App Router) + TypeScript | Unified modern full-stack architecture with React 19 server components and type-safe API route handlers. |
 | **Database & ORM** | Prisma ORM with PostgreSQL (Neon) | Schema migrations, type-safety; the same Neon connection string serves local dev and production. |
 | **Authentication** | JWT via `jose` + `bcryptjs` in HTTP-Only Cookies | Edge-compatible, stateless, secure session tokens with role-based claims. |
-| **Object Storage** | AWS S3 / Cloudflare R2 with Local Adapter | Direct client-to-storage presigned PUT/GET URLs keeping image bytes out of the server and database. The local dev adapter mimics presigned URLs with HMAC-signed, expiring tokens and confines all reads/writes to the uploads directory. |
+| **Object Storage** | Filebase (S3-compatible) with Local Adapter | Direct client-to-storage presigned PUT/GET URLs keeping image bytes out of the server and database. The local dev adapter mimics presigned URLs with HMAC-signed, expiring tokens and confines all reads/writes to the uploads directory. |
 | **Styling** | Tailwind CSS v4 | Responsive, dark-mode glassmorphic user interface. |
 | **Testing** | Node.js Native Test Runner (`node:test` + `node:assert`) | Fast, built-in, zero external version conflicts. |
 
@@ -55,13 +55,13 @@ graph TD
 
     subgraph "Storage Layer"
         StorageAdapter["lib/storage.ts"]
-        S3Bucket["Cloudflare R2 / AWS S3 (Production)"]
+        S3Bucket["Filebase S3-Compatible Storage (Production)"]
         LocalFS["Local /uploads Directory (Development)"]
     end
 
     subgraph "Database Layer"
         PrismaClient["Prisma Client"]
-        Database["Neon PostgreSQL / Local SQLite"]
+        Database["Neon PostgreSQL"]
     end
 
     AdminUser --> Middleware
@@ -200,7 +200,7 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
-With `STORAGE_DRIVER="local"` (default in `.env.example`) photos are stored in `./uploads` behind HMAC-signed, expiring URLs — no cloud account needed for local development. Set `STORAGE_DRIVER="s3"` with R2/S3 credentials to use real object storage.
+With `STORAGE_DRIVER="local"` (default in `.env.example`) photos are stored in `./uploads` behind HMAC-signed, expiring URLs — no cloud account needed for local development. Set `STORAGE_DRIVER="s3"` with Filebase credentials to use real object storage.
 
 ---
 
@@ -213,11 +213,11 @@ With `STORAGE_DRIVER="local"` (default in `.env.example`) photos are stored in `
 | `NEXT_PUBLIC_APP_URL` | Public base URL of the deployment | `http://localhost:3000` |
 | `STORAGE_DRIVER` | Storage provider: `"local"` or `"s3"` | `"local"` |
 | `UPLOAD_DIR` | Local disk folder for file storage when driver is local | `"./uploads"` |
-| `AWS_ACCESS_KEY_ID` | Cloud object storage access key (S3 or Cloudflare R2) | Optional for local |
-| `AWS_SECRET_ACCESS_KEY` | Cloud object storage secret key | Optional for local |
-| `S3_BUCKET` | Target S3 or R2 bucket name | Optional for local |
+| `AWS_ACCESS_KEY_ID` | Filebase access key ID | Optional for local |
+| `AWS_SECRET_ACCESS_KEY` | Filebase secret access key | Optional for local |
+| `S3_BUCKET` | Filebase bucket name | Optional for local |
 | `AWS_REGION` | AWS region | `"us-east-1"` |
-| `S3_ENDPOINT` | Custom endpoint URL for Cloudflare R2 or MinIO | `https://<id>.r2.cloudflarestorage.com` |
+| `S3_ENDPOINT` | S3-compatible endpoint URL | `https://s3.filebase.com` |
 
 ---
 
@@ -228,10 +228,10 @@ With `STORAGE_DRIVER="local"` (default in `.env.example`) photos are stored in `
 2. Copy the pooled connection string into your environment variables as `DATABASE_URL` (locally and on Vercel).
 3. Run `npx prisma db push` to create the schema.
 
-### 2. Cloud Storage (Cloudflare R2 or AWS S3)
+### 2. Cloud Storage (Filebase)
 1. Create a private bucket (e.g., `trizen-photos`).
 2. Generate an API token / access key with Read & Write permissions.
-3. Set `STORAGE_DRIVER="s3"`, `S3_BUCKET="trizen-photos"`, and keys in your production environment.
+3. Set `STORAGE_DRIVER="s3"`, `S3_BUCKET="trizen-photos"`, `S3_ENDPOINT="https://s3.filebase.com"`, `AWS_REGION="us-east-1"`, and your key pair in the production environment.
 
 ### 3. Application Deployment (Vercel)
 1. Push your code to GitHub.
@@ -262,5 +262,5 @@ The script provisions the isolated test database configured in `.env.test` and r
 1. **In-Memory Rate Limiter**: The current rate limiter uses an in-memory sliding window. In multi-instance serverless deployments, upgrading to Redis (e.g. Upstash) provides distributed rate tracking.
 2. **Dynamic Image Thumbnails**: Currently serves original uploaded resolutions; client-side image resizing and responsive srcset with Sharp or Cloudflare Image Resizing can be enabled for ultra-low bandwidth scenarios.
 3. **ZIP Gallery Download**: Clients can download individual high-resolution photos; batch ZIP archive downloads can be added via asynchronous serverless background workers.
-4. **Local Storage Adapter (development only)**: With `STORAGE_DRIVER="local"` the app stores files on disk under `uploads/` behind HMAC-signed, expiring URLs. This is a development convenience; production deployments use S3/R2 presigned URLs exclusively (the local route returns 404 when the S3 driver is active).
+4. **Local Storage Adapter (development only)**: With `STORAGE_DRIVER="local"` the app stores files on disk under `uploads/` behind HMAC-signed, expiring URLs. This is a development convenience; production deployments use Filebase presigned URLs exclusively (the local route returns 404 when the S3 driver is active).
 5. **Pending-Upload Cleanup**: Photos whose upload was aborted remain in `PENDING` status and are excluded from all listings; an automated reaper for stale `PENDING` rows is future work.

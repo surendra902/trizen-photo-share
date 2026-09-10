@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
-    "test": "node scripts/check-test-env.js && node --env-file=.env.test node_modules/prisma/build/index.js db push --skip-generate && tsx --env-file=.env.test --test tests/**/*.test.ts",
+    "test": "node scripts/check-test-env.mjs && node --env-file=.env.test node_modules/prisma/build/index.js db push --skip-generate && tsx --env-file=.env.test --test tests/**/*.test.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {
