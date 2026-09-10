@@ -118,6 +118,29 @@ export async function getPresignedViewUrl(
 }
 
 /**
+ * Write a buffer to storage (S3/R2 in production, local dir in development).
+ * Used by the seed script; normal uploads go through presigned PUTs.
+ */
+export async function putObject(
+  storageKey: string,
+  buffer: Buffer,
+  contentType: string
+): Promise<void> {
+  if (DRIVER === 's3' && s3Client && process.env.S3_BUCKET) {
+    await s3Client.send(
+      new PutObjectCommand({
+        Bucket: process.env.S3_BUCKET,
+        Key: storageKey,
+        Body: buffer,
+        ContentType: contentType,
+      })
+    );
+    return;
+  }
+  await saveLocalBuffer(storageKey, buffer);
+}
+
+/**
  * Check if a file actually exists in storage (used to confirm upload)
  */
 export async function verifyObjectExists(storageKey: string): Promise<boolean> {

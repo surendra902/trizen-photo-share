@@ -1,7 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import path from 'path';
+import { putObject } from '../src/lib/storage';
 
 const prisma = new PrismaClient();
 
@@ -67,13 +66,6 @@ async function main() {
   });
   console.log('Created Event:', event.name, `(${event.id})`);
 
-  // Ensure uploads directory exists
-  const uploadDir = path.resolve(process.cwd(), 'uploads');
-  const eventDir = path.join(uploadDir, 'events', event.id);
-  if (!fs.existsSync(eventDir)) {
-    fs.mkdirSync(eventDir, { recursive: true });
-  }
-
   // 4. Seed Photos
   const photoNames = [
     'Ceremony_Exchange_001.jpg',
@@ -86,9 +78,9 @@ async function main() {
   for (let i = 0; i < photoNames.length; i++) {
     const filename = photoNames[i];
     const storageKey = `events/${event.id}/${i + 1}_${filename}`;
-    const filePath = path.join(uploadDir, storageKey);
 
-    fs.writeFileSync(filePath, SAMPLE_JPEG);
+    // Goes to R2/S3 when STORAGE_DRIVER=s3, local uploads/ otherwise
+    await putObject(storageKey, SAMPLE_JPEG, 'image/jpeg');
 
     const photo = await prisma.photo.create({
       data: {
